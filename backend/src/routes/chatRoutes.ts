@@ -1,12 +1,12 @@
 import express from 'express';
-import { ChatRequest, ChatResponse } from '../types';
+import { ChatRequest, ChatResponse, CartItem } from '../types';
 import nlpService from '../services/nlpService';
 import { menuItems } from '../data/menu';
 
 const router = express.Router();
 
 // Store user carts in memory (in production, use database)
-const userCarts = new Map();
+const userCarts = new Map<string, { items: CartItem[]; total: number }>();
 
 router.post('/', (req, res) => {
   try {
@@ -30,7 +30,7 @@ router.post('/', (req, res) => {
       for (const item of parsed.items) {
         const menuItem = menuItems.find(m => m.id === item.menuItemId);
         if (menuItem) {
-          const existingItem = cart.items.find(ci => ci.menuItemId === item.menuItemId);
+          const existingItem = cart.items.find((ci: CartItem) => ci.menuItemId === item.menuItemId);
           if (existingItem) {
             existingItem.quantity += item.quantity;
           } else {
@@ -45,7 +45,7 @@ router.post('/', (req, res) => {
       }
     } else if (parsed.intent === 'remove_from_cart') {
       // Remove specific items
-      cart.items = cart.items.filter(item => 
+      cart.items = cart.items.filter((item: CartItem) => 
         !parsed.items.some(p => p.name.toLowerCase().includes(item.name.toLowerCase()))
       );
     } else if (parsed.intent === 'clear_cart') {
@@ -53,7 +53,7 @@ router.post('/', (req, res) => {
     }
 
     // Calculate total
-    cart.total = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    cart.total = cart.items.reduce((sum: number, item: CartItem) => sum + (item.price * item.quantity), 0);
 
     // Save cart
     userCarts.set(userId, cart);
