@@ -29,7 +29,7 @@ router.post('/', (req, res) => {
     if (parsed.intent === 'add_to_cart') {
       for (const item of parsed.items) {
         const menuItem = menuItems.find(m => m.id === item.menuItemId);
-        if (menuItem) {
+        if (menuItem && item.menuItemId) {
           const existingItem = cart.items.find((ci: CartItem) => ci.menuItemId === item.menuItemId);
           if (existingItem) {
             existingItem.quantity += item.quantity;
